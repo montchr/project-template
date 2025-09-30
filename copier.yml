@@ -1,0 +1,32 @@
+---
+_exclude:
+  - .bin
+  - .cache
+  - .data
+  - .direnv
+  - .run
+  - result
+  # Defaults:
+  - 'copier.yaml'
+  - 'copier.yml'
+  - '~*'
+  - '*.py[co]'
+  - '__pycache__'
+  - '.git'
+  - '.DS_Store'
+  - '.svn'
+_preserve_symlinks: true
+_subdirectory: template
+
+prj_slug:
+  type: str
+  help: 'What is the project slug?'
+
+prj_title:
+  type: str
+  help: 'What is the project title?'
+
+prj_repo_name:
+  type: str
+  help: 'What is the name of the project repo on Git forges?'
+  default: '{{ prj_slug }}'

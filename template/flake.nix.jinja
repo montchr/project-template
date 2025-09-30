@@ -1,0 +1,44 @@
+{
+  description = "{{ prj_title }}";
+
+  inputs = {
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    systems.url = "github:nix-systems/default";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  };
+
+  outputs =
+    inputs@{ systems, flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = import systems;
+
+      imports = [
+        inputs.flake-parts.flakeModules.modules
+        inputs.flake-parts.flakeModules.partitions
+      ];
+
+      perSystem =
+        { pkgs, ... }:
+        {
+          formatter = pkgs.nixfmt-rfc-style;
+        };
+
+      partitions.dev = {
+        extraInputsFlake = ./.config;
+        module =
+          { inputs, ... }:
+          {
+            imports = [
+              inputs.git-hooks.flakeModule
+              ./.config/devshells
+              ./.config/git-hooks
+            ];
+          };
+      };
+
+      partitionedAttrs = {
+        checks = "dev";
+        devShells = "dev";
+      };
+    };
+}

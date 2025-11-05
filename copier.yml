@@ -4,6 +4,7 @@ _exclude:
   - .cache
   - .data
   - .direnv
+  - .jj
   - .run
   - result
   # Defaults:
@@ -17,6 +18,10 @@ _exclude:
   - '.svn'
 _preserve_symlinks: true
 _subdirectory: template
+_envops:
+  # https://jinja.palletsprojects.com/en/stable/templates/#whitespace-control
+  lstrip_blocks: true
+  trim_blocks: true
 
 prj_slug:
   type: str
@@ -30,3 +35,11 @@ prj_repo_name:
   type: str
   help: 'What is the name of the project repo on Git forges?'
   default: '{{ prj_slug }}'
+
+langs:
+  type: str
+  multiselect: true
+  choices:
+    - "JavaScript/TypeScript": "js"
+    - PHP: "php"
+    - Rust: "rust"

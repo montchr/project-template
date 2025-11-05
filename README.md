@@ -13,9 +13,9 @@ determined by way of the Copier answers.
 
 ## Development
 
-Note that the template’s `.envrc` and `flake.nix` files should always
-have a `.jinja` suffix regardless of whether they contain Jinja syntax.
-This prevents Direnv and tools that look for the presence of a
-`flake.nix` file from thinking that the `template/` subdirectory is a
-real root scope.  Without it, you would likely experience errors when
-the Nix development shell is initialized.
+Note that the template’s `flake.nix` files should always have a `.jinja`
+suffix regardless of whether they contain Jinja syntax.  This prevents
+Direnv and tools that look for the presence of a `flake.nix` file from
+thinking that the `template/` subdirectory is a real root scope.
+Without it, you would likely experience errors when the Nix development
+shell is initialized.

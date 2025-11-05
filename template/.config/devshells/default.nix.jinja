@@ -1,0 +1,81 @@
+{ lib, ... }:
+{
+  perSystem =
+    {
+      {% if "rust" in langs %}commonArgs{% endif %}
+      config,
+      inputs',
+      pkgs,
+      ...
+    }:
+    let
+      inherit (commonArgs) rustChannel rustVersion;
+      inherit (pkgs.rust-bin.${rustChannel}.${rustVersion}) rust-src;
+
+      craneLib = inputs.crane.mkLib pkgs;
+
+      nativeBuildInputs = [
+        {% if "rust" in langs %}
+        pkgs.pkg-config
+        {% endif %}
+      ];
+
+      buildInputs = [
+        {% if "rust" in langs %}
+        pkgs.openssl
+        {% endif %}
+      ];
+
+      commonPkgs =
+        buildInputs
+        ++ nativeBuildInputs
+        ++ [
+          inputs'.nixpkgs-trunk.legacyPackages.just
+          pkgs.reuse
+        ];
+
+      checksPkgs = config.pre-commit.settings.enabledPackages ++ [
+        pkgs.biome
+      ];
+
+      formatterPkgs = (lib.attrValues config.treefmt.build.programs) ++ [
+        config.formatter
+        config.treefmt.build.wrapper
+      ];
+
+      ciPkgs = commonPkgs ++ checksPkgs;
+      devPkgs =
+        commonPkgs
+        ++ checksPkgs
+        ++ formatterPkgs
+        ++ [
+          {% if "rust" in langs %}
+          pkgs.rust-analyzer-unwrapped
+          {% endif %}
+        ];
+
+      shellHook = ''
+        : "''${PRJ_BIN_HOME:=''${PRJ_PATH:-''${PRJ_ROOT}/.bin}}"
+
+        export PRJ_BIN_HOME
+
+        ${config.pre-commit.installationScript}
+      '';
+    in
+    {
+      {% if "rust" in langs %}
+      devShells.default = craneLib.devShell {
+        inherit shellHook;
+        packages = devPkgs;
+        RUST_SRC_PATH = "${rust-src}/lib/rustlib/src/rust/library";
+      };
+      {% else %}
+      devShells.default = pkgs.mkShellNoCC {
+        inherit buildInputs shellHook;
+        nativeBuildInputs = devPkgs;
+      };
+      {% endif %}
+
+      devShells.ci = pkgs.mkShellNoCC { nativeBuildInputs = ciPkgs; };
+    };
+}

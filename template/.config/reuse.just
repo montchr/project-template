@@ -7,10 +7,12 @@ owner-name := "chris montgomery"
 owner-email := "chmont@protonmail.com"
 owner-attribution := owner-name + " <" + owner-email + ">"
 
+agpl3 := 'AGPL-3.0-or-later'
 gpl3 := 'GPL-3.0-or-later'
 docs-license := "CC-BY-SA-4.0"
 and := ' AND '
 
+alias default-license := agpl3
 alias public-domain := cc0
 
 lint:

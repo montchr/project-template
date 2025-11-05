@@ -1,0 +1,16 @@
+{
+  perSystem =
+    { ... }:
+    {
+      treefmt = {
+        projectRootFile = ".git/config";
+        programs = {
+          biome.enable = true;
+          nixfmt.enable = true;
+          {% if "rust" in langs %}
+          rustfmt.enable = true;
+          {% endif %}
+        };
+      };
+    };
+}

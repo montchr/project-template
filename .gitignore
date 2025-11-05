@@ -1,3 +1,5 @@
+flake.lock
+
 # Data/logs/testing
 .data
 *.log

@@ -12,7 +12,12 @@
   };
 
   outputs =
-    inputs@{ systems, flake-parts, ... }:
+    inputs@{
+      systems,
+      flake-parts,
+      nixpkgs,
+      ...
+    }:
     let
       systems = import systems;
 
@@ -37,7 +42,7 @@
       ];
 
       perSystem =
-        { pkgs, ... }:
+        { system, pkgs, ... }:
         {% if "rust" in langs %}
         let
           commonArgs = {

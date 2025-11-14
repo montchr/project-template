@@ -13,13 +13,12 @@
 
   outputs =
     inputs@{
-      systems,
       flake-parts,
       nixpkgs,
       ...
     }:
     let
-      systems = import systems;
+      systems = import inputs.systems;
 
       {% if "rust" in langs %}
       # For details on these options, See

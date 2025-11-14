@@ -1,8 +1,8 @@
-{ lib, ... }:
+{ inputs, lib, ... }:
 {
   perSystem =
     {
-      {% if "rust" in langs %}commonArgs{% endif %}
+      {% if "rust" in langs %}commonArgs,{% endif %}
       config,
       inputs',
       pkgs,

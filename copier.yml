@@ -40,6 +40,6 @@ langs:
   type: str
   multiselect: true
   choices:
-    - "JavaScript/TypeScript": "js"
-    - PHP: "php"
-    - Rust: "rust"
+    "JavaScript/TypeScript": "js"
+    "PHP": "php"
+    "Rust": "rust"

@@ -35,6 +35,7 @@ vendor
 # Build artifacts
 hot
 result
+target
 
 # Editor
 /.idea/

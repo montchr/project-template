@@ -2,17 +2,21 @@
 {
   perSystem =
     {
-      {% if "rust" in langs %}commonArgs,{% endif %}
+      {% if "rust" in langs %}
+      commonArgs,
+      {% endif %}
       config,
       inputs',
       pkgs,
       ...
     }:
     let
+      {% if "rust" in langs %}
       inherit (commonArgs) rustChannel rustVersion;
       inherit (pkgs.rust-bin.${rustChannel}.${rustVersion}) rust-src;
 
       craneLib = inputs.crane.mkLib pkgs;
+      {% endif %}
 
       nativeBuildInputs = [
         {% if "rust" in langs %}

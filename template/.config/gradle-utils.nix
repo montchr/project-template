@@ -1,0 +1,16 @@
+{ pkgs }:
+{
+  # Script to patch gradle's aapt2 binary for NixOS
+  patchGradleAapt2 = pkgs.writeShellScriptBin "patch-gradle-aapt2" ''
+    set -e
+    AAPT2_PATH=$(find ~/.gradle/caches -name "aapt2" -type f 2>/dev/null | head -1)
+    if [ -n "$AAPT2_PATH" ]; then
+      echo "Patching $AAPT2_PATH for NixOS..."
+      ${pkgs.patchelf}/bin/patchelf --set-interpreter "$(cat ${pkgs.stdenv.cc}/nix-support/dynamic-linker)" "$AAPT2_PATH"
+      echo "aapt2 patched successfully"
+    else
+      echo "aapt2 not found in gradle cache. Run a gradle build first."
+      exit 1
+    fi
+  '';
+}

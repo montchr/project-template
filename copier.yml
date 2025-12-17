@@ -43,3 +43,4 @@ langs:
     "JavaScript/TypeScript": "js"
     "PHP": "php"
     "Rust": "rust"
+    "Rust+Android": "rust+android"

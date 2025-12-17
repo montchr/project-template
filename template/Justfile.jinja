@@ -1,0 +1,73 @@
+###: <https://just.systems/man/en/>
+
+mod reuse '.config/reuse'
+mod release '.config/release'
+
+prj-root := env("PRJ_ROOT")
+
+default:
+  @just --choose
+
+[doc: "Check the project for issues"]
+check:
+    biome check {{ '{{prj-root}}' }}
+
+[doc: "Format the project files"]
+fmt:
+    treefmt
+{% if "rust" in langs or "rust+android" in langs %}
+
+# Rust commands
+
+[doc: "Compile check all packages"]
+check-rust:
+    cargo check
+
+[doc: "Run Rust tests"]
+test:
+    cargo test
+
+[doc: "Run clippy linter"]
+lint:
+    cargo clippy -- -D warnings
+
+[doc: "Format Rust code"]
+fmt-rust:
+    cargo fmt
+{% endif %}
+{% if "rust+android" in langs %}
+
+# Android commands
+
+[doc: "Patch Gradle aapt2 for NixOS (run once after Gradle downloads aapt2)"]
+patch-aapt2:
+    patch-gradle-aapt2
+
+[doc: "Build Android debug APK"]
+build-android:
+    cd android && ./gradlew assembleDebug
+
+[doc: "Build Android release APK"]
+build-android-release:
+    cd android && ./gradlew assembleRelease
+
+[doc: "Install APK on connected device/emulator"]
+install-android:
+    adb install android/app/build/outputs/apk/debug/app-debug.apk
+
+[doc: "Launch installed Android app"]
+launch-android package_name:
+    adb shell am start -n {{ '{{package_name}}' }}/android.app.NativeActivity
+
+[doc: "Show Android logs"]
+logcat filter="":
+    adb logcat | grep {{ '{{filter}}' }}
+
+[doc: "Take a screenshot from the emulator"]
+screenshot file="/tmp/screenshot.png":
+    adb exec-out screencap -p > {{ '{{file}}' }}
+    @echo "Screenshot saved to {{ '{{file}}' }}"
+
+[doc: "Full Android workflow: build, install, launch"]
+run-android package_name: build-android install-android (launch-android package_name)
+{% endif %}

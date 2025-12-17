@@ -2,33 +2,70 @@
 {
   perSystem =
     {
-      {% if "rust" in langs %}
+      {% if "rust" in langs or "rust+android" in langs %}
       commonArgs,
       {% endif %}
       config,
       inputs',
       pkgs,
+      {% if "rust+android" in langs %}
+      gradleUtils,
+      {% endif %}
       ...
     }:
     let
-      {% if "rust" in langs %}
+      {% if "rust" in langs or "rust+android" in langs %}
       inherit (commonArgs) rustChannel rustVersion;
+      {% endif %}
+      {% if "rust+android" in langs %}
+      inherit (commonArgs) androidNdkVersion androidSdk;
+
+      # Rust toolchain with Android targets
+      rustToolchain = pkgs.rust-bin.${rustChannel}.${rustVersion}.default.override {
+        extensions = [ "rust-src" ];
+        targets = [
+          "aarch64-linux-android"
+          "armv7-linux-androideabi"
+          "i686-linux-android"
+          "x86_64-linux-android"
+        ];
+      };
+      {% else %}
+      {% if "rust" in langs %}
       inherit (pkgs.rust-bin.${rustChannel}.${rustVersion}) rust-src;
 
       craneLib = inputs.crane.mkLib pkgs;
       {% endif %}
+      {% endif %}
 
       nativeBuildInputs = [
-        {% if "rust" in langs %}
+        {% if "rust" in langs or "rust+android" in langs %}
         pkgs.pkg-config
+        {% endif %}
+        {% if "rust+android" in langs %}
+        pkgs.cargo-ndk
         {% endif %}
       ];
 
       buildInputs = [
-        {% if "rust" in langs %}
+        {% if "rust" in langs or "rust+android" in langs %}
         pkgs.openssl
         {% endif %}
       ];
+      {% if "rust+android" in langs %}
+
+      # Linux-specific libraries for running desktop builds
+      linuxLibs = with pkgs; [
+        wayland
+        libxkbcommon
+        fontconfig
+        libGL
+        xorg.libX11
+        xorg.libXcursor
+        xorg.libXi
+        xorg.libXrandr
+      ];
+      {% endif %}
 
       commonPkgs =
         buildInputs
@@ -36,16 +73,46 @@
         ++ [
           inputs'.nixpkgs-trunk.legacyPackages.just
           pkgs.reuse
+          {% if "rust+android" in langs %}
+          rustToolchain
+          {% endif %}
         ];
 
       checksPkgs = config.pre-commit.settings.enabledPackages ++ [
         pkgs.biome
+        {% if "rust+android" in langs %}
+        pkgs.clippy
+        {% endif %}
       ];
 
       formatterPkgs = (lib.attrValues config.treefmt.build.programs) ++ [
         config.formatter
         config.treefmt.build.wrapper
+        {% if "rust+android" in langs %}
+        pkgs.rustfmt
+        {% endif %}
       ];
+      {% if "rust+android" in langs %}
+
+      # FHS environment for Android gradle builds (to run aapt2 and other tools)
+      androidFHSEnv = pkgs.buildFHSEnv {
+        name = "android-env";
+        targetPkgs = pkgs: (with pkgs; [
+          gradle
+          androidSdk
+          jdk17
+          glibc
+          zlib
+          ncurses5
+          stdenv.cc.cc.lib
+        ]);
+        multiPkgs = pkgs: (with pkgs; [
+          zlib
+          ncurses5
+        ]);
+        runScript = "bash";
+      };
+      {% endif %}
 
       ciPkgs = commonPkgs ++ checksPkgs;
       devPkgs =
@@ -53,8 +120,16 @@
         ++ checksPkgs
         ++ formatterPkgs
         ++ [
-          {% if "rust" in langs %}
+          {% if "rust" in langs and "rust+android" not in langs %}
           pkgs.rust-analyzer-unwrapped
+          {% endif %}
+          {% if "rust+android" in langs %}
+          androidSdk
+          pkgs.gradle
+          pkgs.jdk17
+          pkgs.rust-analyzer-unwrapped
+          androidFHSEnv
+          gradleUtils.patchGradleAapt2
           {% endif %}
         ];
 
@@ -67,6 +142,30 @@
       '';
     in
     {
+      {% if "rust+android" in langs %}
+      shells.default = {
+        inherit shellHook;
+        name = "{{ prj_slug }}-dev";
+        packages = devPkgs ++ (lib.optionals pkgs.stdenv.isLinux linuxLibs);
+        env = {
+          # Android environment variables
+          ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
+          ANDROID_SDK_ROOT = "${androidSdk}/libexec/android-sdk";
+          ANDROID_NDK_ROOT = "${androidSdk}/libexec/android-sdk/ndk/${androidNdkVersion}";
+          JAVA_HOME = "${pkgs.jdk17}";
+          CARGO_HOME = {
+            value = "$PRJ_CACHE_HOME/cargo";
+            eval = true;
+          };
+
+          # Linux-specific: add library paths
+          LD_LIBRARY_PATH = lib.optionalString pkgs.stdenv.isLinux (lib.makeLibraryPath linuxLibs);
+          RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
+        };
+      };
+
+      shells.ci.packages = ciPkgs;
+      {% else %}
       {% if "rust" in langs %}
       devShells.default = craneLib.devShell {
         inherit shellHook;
@@ -81,5 +180,6 @@
       {% endif %}
 
       devShells.ci = pkgs.mkShellNoCC { nativeBuildInputs = ciPkgs; };
+      {% endif %}
     };
 }

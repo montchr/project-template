@@ -54,4 +54,6 @@ Selecting "Rust+Android" implies Rust support (all `"rust" in langs` conditions 
 - FHS environment for running Android build tools
 - Just commands for Android build/deploy workflow
 
-The devshell uses the `devshelves` flake module (provides `shells.default` pattern with cleaner env var handling) instead of standard `devShells.default`.
+## Devshelves
+
+All generated projects use `devshelves`, which provides composable Nix development shells via flake-parts. It enables defining and merging shell configurations across multiple modules/files using NixOS module semantics, with priority-based execution for shell hooks and environment variables.

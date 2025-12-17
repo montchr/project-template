@@ -15,9 +15,7 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     crane.url = "github:ipetkov/crane";
     {% endif %}
-    {% if "rust+android" in langs %}
     devshelves.url = "github:astratagem/devshelves";
-    {% endif %}
   };
 
   outputs =
@@ -58,9 +56,7 @@
       imports = [
         inputs.flake-parts.flakeModules.modules
         inputs.flake-parts.flakeModules.partitions
-        {% if "rust+android" in langs %}
         inputs.devshelves.flakeModules.default
-        {% endif %}
       ];
 
       perSystem =

@@ -10,10 +10,6 @@
             # Auto-generated
             "CHANGELOG.md"
           ];
-          reuse = {
-            enable = true;
-            stages = [ "pre-push" ];
-          };
           treefmt.enable = true;
           yamllint.enable = true;
         };

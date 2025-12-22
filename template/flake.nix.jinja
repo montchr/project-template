@@ -13,6 +13,11 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     systems.url = "github:nix-systems/default";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-trunk.url = "github:NixOS/nixpkgs/master";
+    git-hooks.url = "github:cachix/git-hooks.nix";
+    git-hooks.inputs.nixpkgs.follows = "";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+    treefmt-nix.inputs.nixpkgs.follows = "";
     {% if "rust" in langs %}
     rust-overlay.url = "github:oxalica/rust-overlay";
     crane.url = "github:ipetkov/crane";
@@ -56,9 +61,12 @@
       inherit systems;
 
       imports = [
-        inputs.flake-parts.flakeModules.modules
-        inputs.flake-parts.flakeModules.partitions
         inputs.devshelves.flakeModules.default
+        inputs.git-hooks.flakeModule
+        inputs.treefmt-nix.flakeModule
+        ./.config/devshells
+        ./.config/git-hooks.nix
+        ./.config/treefmt.nix
       ];
 
       perSystem =
@@ -150,25 +158,5 @@
 
           formatter = pkgs.nixfmt-rfc-style;
         };
-
-      partitions.dev = {
-        extraInputsFlake = ./.config;
-        module =
-          { inputs, ... }:
-          {
-            imports = [
-              inputs.git-hooks.flakeModule
-              inputs.treefmt-nix.flakeModule
-              ./.config/devshells
-              ./.config/git-hooks.nix
-              ./.config/treefmt.nix
-            ];
-          };
-      };
-
-      partitionedAttrs = {
-        checks = "dev";
-        devShells = "dev";
-      };
     };
 }

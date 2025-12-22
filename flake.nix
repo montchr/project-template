@@ -3,6 +3,9 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     systems.url = "github:nix-systems/default";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-trunk.url = "github:NixOS/nixpkgs/master";
+    git-hooks.url = "github:cachix/git-hooks.nix";
+    git-hooks.inputs.nixpkgs.follows = "";
   };
 
   outputs =
@@ -12,8 +15,9 @@
       debug = true;
 
       imports = [
-        inputs.flake-parts.flakeModules.modules
-        inputs.flake-parts.flakeModules.partitions
+        inputs.git-hooks.flakeModule
+        ./.config/devshells
+        ./.config/git-hooks
       ];
 
       perSystem =
@@ -21,23 +25,5 @@
         {
           formatter = pkgs.nixfmt-rfc-style;
         };
-
-      partitions.dev = {
-        extraInputsFlake = ./.config;
-        module =
-          { inputs, ... }:
-          {
-            imports = [
-              inputs.git-hooks.flakeModule
-              ./.config/devshells
-              ./.config/git-hooks
-            ];
-          };
-      };
-
-      partitionedAttrs = {
-        checks = "dev";
-        devShells = "dev";
-      };
     };
 }

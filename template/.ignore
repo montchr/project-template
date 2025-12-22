@@ -1,7 +1,0 @@
-*.cache
-*.local
-.data
-.git
-.jj*
-node_modules
-vendor

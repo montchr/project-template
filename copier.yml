@@ -36,6 +36,16 @@ prj_repo_name:
   help: 'What is the name of the project repo on Git forges?'
   default: '{{ prj_slug }}'
 
+copyright_name:
+  type: str
+  help: 'Copyright holder name'
+  default: 'Chris Montgomery'
+
+copyright_email:
+  type: str
+  help: 'Copyright holder email'
+  default: 'chmont@protonmail.com'
+
 langs:
   type: str
   multiselect: true
@@ -45,3 +55,12 @@ langs:
     "PHP": "php"
     "Rust": "rust"
     "Android": "android"
+
+license:
+  type: str
+  help: "Which license should the project use?"
+  choices:
+    "GPL-3.0-or-later": "GPL-3.0-or-later"
+    "GPL-2.0-or-later": "GPL-2.0-or-later"
+    "AGPL-3.0-or-later": "AGPL-3.0-or-later"
+  default: "GPL-3.0-or-later"

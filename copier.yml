@@ -39,8 +39,9 @@ prj_repo_name:
 langs:
   type: str
   multiselect: true
+  help: "Which languages/platforms does this project target?"
   choices:
     "JavaScript/TypeScript": "js"
     "PHP": "php"
     "Rust": "rust"
-    "Rust+Android": "rust+android"
+    "Android": "android"

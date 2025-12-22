@@ -15,7 +15,7 @@ check:
 [doc: "Format the project files"]
 fmt:
     treefmt
-{% if "rust" in langs or "rust+android" in langs %}
+{% if "rust" in langs %}
 
 # Rust commands
 
@@ -35,7 +35,7 @@ lint:
 fmt-rust:
     cargo fmt
 {% endif %}
-{% if "rust+android" in langs %}
+{% if "android" in langs %}
 
 # Android commands
 

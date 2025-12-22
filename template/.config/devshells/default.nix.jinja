@@ -2,23 +2,25 @@
 {
   perSystem =
     {
-      {% if "rust" in langs or "rust+android" in langs %}
+      {% if "rust" in langs %}
       commonArgs,
       {% endif %}
       config,
       inputs',
       pkgs,
-      {% if "rust+android" in langs %}
+      {% if "android" in langs %}
       gradleUtils,
       {% endif %}
       ...
     }:
     let
-      {% if "rust" in langs or "rust+android" in langs %}
+      {% if "rust" in langs %}
       inherit (commonArgs) rustChannel rustVersion;
       {% endif %}
-      {% if "rust+android" in langs %}
+      {% if "android" in langs %}
       inherit (commonArgs) androidNdkVersion androidSdk;
+      {% endif %}
+      {% if "rust" in langs and "android" in langs %}
 
       # Rust toolchain with Android targets
       rustToolchain = pkgs.rust-bin.${rustChannel}.${rustVersion}.default.override {
@@ -37,20 +39,20 @@
       {% endif %}
 
       nativeBuildInputs = [
-        {% if "rust" in langs or "rust+android" in langs %}
+        {% if "rust" in langs %}
         pkgs.pkg-config
         {% endif %}
-        {% if "rust+android" in langs %}
+        {% if "rust" in langs and "android" in langs %}
         pkgs.cargo-ndk
         {% endif %}
       ];
 
       buildInputs = [
-        {% if "rust" in langs or "rust+android" in langs %}
+        {% if "rust" in langs %}
         pkgs.openssl
         {% endif %}
       ];
-      {% if "rust+android" in langs %}
+      {% if "android" in langs %}
 
       # Linux-specific libraries for running desktop builds
       linuxLibs = with pkgs; [
@@ -71,14 +73,14 @@
         ++ [
           inputs'.nixpkgs-trunk.legacyPackages.just
           pkgs.reuse
-          {% if "rust" in langs or "rust+android" in langs %}
+          {% if "rust" in langs %}
           rustToolchain
           {% endif %}
         ];
 
       checksPkgs = config.pre-commit.settings.enabledPackages ++ [
         pkgs.biome
-        {% if "rust" in langs or "rust+android" in langs %}
+        {% if "rust" in langs %}
         pkgs.clippy
         {% endif %}
       ];
@@ -86,11 +88,11 @@
       formatterPkgs = (lib.attrValues config.treefmt.build.programs) ++ [
         config.formatter
         config.treefmt.build.wrapper
-        {% if "rust" in langs or "rust+android" in langs %}
+        {% if "rust" in langs %}
         pkgs.rustfmt
         {% endif %}
       ];
-      {% if "rust+android" in langs %}
+      {% if "android" in langs %}
 
       # FHS environment for Android gradle builds (to run aapt2 and other tools)
       androidFHSEnv = pkgs.buildFHSEnv {
@@ -118,10 +120,10 @@
         ++ checksPkgs
         ++ formatterPkgs
         ++ [
-          {% if "rust" in langs or "rust+android" in langs %}
+          {% if "rust" in langs %}
           pkgs.rust-analyzer-unwrapped
           {% endif %}
-          {% if "rust+android" in langs %}
+          {% if "android" in langs %}
           androidSdk
           pkgs.gradle
           pkgs.jdk17
@@ -142,13 +144,13 @@
       shells.default = {
         inherit shellHook;
         name = "{{ prj_slug }}-dev";
-        {% if "rust+android" in langs %}
+        {% if "android" in langs %}
         packages = devPkgs ++ (lib.optionals pkgs.stdenv.isLinux linuxLibs);
         {% else %}
         packages = devPkgs;
         {% endif %}
         env = {
-          {% if "rust+android" in langs %}
+          {% if "android" in langs %}
           # Android environment variables
           ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
           ANDROID_SDK_ROOT = "${androidSdk}/libexec/android-sdk";
@@ -161,7 +163,7 @@
           # Linux-specific: add library paths
           LD_LIBRARY_PATH = lib.optionalString pkgs.stdenv.isLinux (lib.makeLibraryPath linuxLibs);
           {% endif %}
-          {% if "rust" in langs or "rust+android" in langs %}
+          {% if "rust" in langs %}
           RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
           {% endif %}
         };

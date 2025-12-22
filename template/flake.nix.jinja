@@ -1,6 +1,6 @@
 {
   description = "{{ prj_title }}";
-{% if "rust+android" in langs %}
+{% if "android" in langs %}
 
   nixConfig = {
     allow-unfree = true;
@@ -11,7 +11,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     systems.url = "github:nix-systems/default";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    {% if "rust" in langs or "rust+android" in langs %}
+    {% if "rust" in langs %}
     rust-overlay.url = "github:oxalica/rust-overlay";
     crane.url = "github:ipetkov/crane";
     {% endif %}
@@ -25,12 +25,12 @@
       ...
     }:
     let
-      {% if "rust+android" in langs %}
+      {% if "android" in langs %}
       lib = nixpkgs.lib;
       {% endif %}
       systems = import inputs.systems;
 
-      {% if "rust" in langs or "rust+android" in langs %}
+      {% if "rust" in langs %}
       # For details on these options, See
       # https://github.com/oxalica/rust-overlay?tab=readme-ov-file#cheat-sheet-common-usage-of-rust-bin
       #
@@ -41,7 +41,7 @@
       # Profile (default or minimal)
       rustProfile = "default";
       {% endif %}
-      {% if "rust+android" in langs %}
+      {% if "android" in langs %}
 
       # Android SDK configuration
       androidPlatformVersion = "34";
@@ -61,15 +61,16 @@
 
       perSystem =
         { system, pkgs, ... }:
-        {% if "rust" in langs or "rust+android" in langs %}
+        {% if "rust" in langs or "android" in langs %}
         let
+          {% if "rust" in langs %}
           commonArgs = {
             inherit
               src
               rustChannel
               rustProfile
               rustVersion
-              {% if "rust+android" in langs %}
+              {% if "android" in langs %}
               androidEnv
               androidNdkVersion
               androidPlatformVersion
@@ -87,7 +88,8 @@
           # source filtering to include non-standard files during the build.
           # https://crane.dev/source-filtering.html?highlight=source#source-filtering
           src = craneLib.cleanCargoSource (craneLib.path ./.);
-          {% if "rust+android" in langs %}
+          {% endif %}
+          {% if "android" in langs %}
 
           androidEnv = pkgs.androidenv.override { licenseAccepted = true; };
           androidComposition = androidEnv.composeAndroidPackages {
@@ -116,16 +118,16 @@
         {% endif %}
         {
           _module.args = {
-            {% if "rust" in langs or "rust+android" in langs %}
+            {% if "rust" in langs %}
             inherit commonArgs craneLib;
             {% endif %}
-            {% if "rust+android" in langs %}
+            {% if "android" in langs %}
             inherit gradleUtils;
             {% endif %}
             pkgs = import nixpkgs {
               inherit system;
-              overlays = [ {% if "rust" in langs or "rust+android" in langs %}inputs.rust-overlay.overlays.default{% endif %} ];
-              {% if "rust+android" in langs %}
+              overlays = [ {% if "rust" in langs %}inputs.rust-overlay.overlays.default{% endif %} ];
+              {% if "android" in langs %}
               config = {
                 allowUnfree = true;
                 allowUnfreePredicate =
@@ -139,7 +141,7 @@
               {% endif %}
             };
           };
-          {% if "rust+android" in langs %}
+          {% if "android" in langs %}
 
           packages.patch-gradle-aapt2 = gradleUtils.patchGradleAapt2;
           {% endif %}

@@ -7,11 +7,42 @@
       treefmt = {
         projectRootFile = ".git/config";
         programs = {
-          biome.enable = true;
           nixfmt.enable = true;
           {% if "rust" in langs %}
           rustfmt.enable = true;
           {% endif %}
+        };
+        settings.formatter = {
+          biome = {
+            command = pkgs.biome;
+            options = [
+              "check"
+              "--write"
+              "--no-errors-on-unmatched"
+              "--files-ignore-unknown=true"
+            ];
+            includes = [
+              "*.js"
+              "*.mjs"
+              "*.cjs"
+              "*.ts"
+              "*.mts"
+              "*.cts"
+              "*.d.ts"
+              "*.d.mts"
+              "*.d.cts"
+              "*.jsx"
+              "*.tsx"
+              "*.json"
+              "*.jsonc"
+              "*.css"
+              "*.vue"
+              "*.svelte"
+              "*.astro"
+              "*.graphql"
+              "*.gql"
+            ];
+          };
         };
       };
     };

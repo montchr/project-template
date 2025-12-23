@@ -12,6 +12,9 @@
           ];
           treefmt.enable = true;
           yamllint.enable = true;
+          yamllint.excludes = [
+            ".copier-answers.yml"
+          ];
         };
         default_stages = [
           "pre-commit"
